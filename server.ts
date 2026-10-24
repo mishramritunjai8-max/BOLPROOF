@@ -39,11 +39,23 @@ app.use(
   cors({
     origin: (origin, callback) => {
       // Allow requests with no origin (such as mobile apps, curl, or same-origin)
-      if (!origin || allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        callback(new Error(`Origin ${origin} not permitted by BOLPROOF CORS policy.`));
+      if (!origin) {
+        return callback(null, true);
       }
+      if (
+        allowedOrigins.includes(origin) ||
+        origin.endsWith('.vercel.app') ||
+        origin.endsWith('.pages.dev') ||
+        origin.endsWith('.workers.dev') ||
+        (process.env.VERCEL_URL && origin.includes(process.env.VERCEL_URL))
+      ) {
+        return callback(null, true);
+      }
+      // Allow in development or when explicitly configured
+      if (process.env.ALLOWED_ORIGINS === '*' || process.env.NODE_ENV !== 'production') {
+        return callback(null, true);
+      }
+      callback(new Error(`Origin ${origin} not permitted by BOLPROOF CORS policy.`));
     },
     credentials: true,
   })
@@ -203,9 +215,11 @@ function getApiKey(): string | null {
 }
 
 // ============================================================================
-// 6. HEALTH CHECK ENDPOINT
+// 6. API ROUTER & ENDPOINTS
 // ============================================================================
-app.get('/api/health', generalRateLimiter, (_req: Request, res: Response) => {
+const apiRouter = express.Router();
+
+apiRouter.get('/health', generalRateLimiter, (_req: Request, res: Response) => {
   const configured = getApiKey() !== null;
   res.json({
     status: 'ok',
@@ -223,11 +237,25 @@ app.get('/api/health', generalRateLimiter, (_req: Request, res: Response) => {
   });
 });
 
+apiRouter.get('/', generalRateLimiter, (_req: Request, res: Response) => {
+  const configured = getApiKey() !== null;
+  res.json({
+    status: 'ok',
+    service: 'BOLPROOF Voice Backend',
+    gnaniConfigured: configured,
+    endpoints: {
+      health: 'GET /api/health',
+      transcribe: 'POST /api/voice/transcribe',
+      speak: 'POST /api/voice/speak',
+    },
+  });
+});
+
 // ============================================================================
 // 7. POST /api/voice/transcribe (Gnani Prisma STT v3 Proxy)
 // ============================================================================
-app.post(
-  '/api/voice/transcribe',
+apiRouter.post(
+  '/voice/transcribe',
   voiceRateLimiter,
   upload.single('audio_file'),
   async (req: Request, res: Response) => {
@@ -370,7 +398,7 @@ app.post(
 // ============================================================================
 // 8. POST /api/voice/speak (Gnani Timbre TTS v2.5 Proxy)
 // ============================================================================
-app.post('/api/voice/speak', voiceRateLimiter, async (req: Request, res: Response) => {
+apiRouter.post('/voice/speak', voiceRateLimiter, async (req: Request, res: Response) => {
   try {
     const apiKey = getApiKey();
     if (!apiKey) {
@@ -481,6 +509,14 @@ app.post('/api/voice/speak', voiceRateLimiter, async (req: Request, res: Respons
     });
   }
 });
+
+// ============================================================================
+// MOUNT API ROUTER
+// Mounts on both '/api' (for local Vite proxy / standard routing)
+// and '/' (if Vercel rewrite strips the '/api' prefix).
+// ============================================================================
+app.use('/api', apiRouter);
+app.use('/', apiRouter);
 
 // ============================================================================
 // 9. CENTRALIZED ERROR HANDLING MIDDLEWARE
