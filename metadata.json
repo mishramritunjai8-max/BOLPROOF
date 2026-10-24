@@ -1,0 +1,6 @@
+{
+  "name": "BOLPROOF — Voice-Order Verification for Kirana Shops",
+  "description": "Interactive 3D landing page for BOLPROOF: AI-free deterministic voice order verification for Indian neighborhood kirana grocery stores.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

@@ -1,0 +1,38 @@
+name: BOLPROOF CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+# Least-privilege workflow permissions
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: Build, Lint & Automated Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: TypeScript Type Check
+        run: npm run lint
+
+      - name: Run Automated Unit & API Tests
+        run: npm run test:all
+
+      - name: Production Vite Build
+        run: npm run build

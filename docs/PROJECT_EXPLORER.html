@@ -1,0 +1,1056 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BOLPROOF — Interactive Project Explorer</title>
+  <meta name="description" content="Interactive visual guide to BOLPROOF: Deterministic voice-order verification for Indian kirana grocery shops." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bungee+Inline&family=Jaro:opsz@6..72&family=Nabla&family=Poppins:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --coral: #FF9D9D;
+      --peach: #FFC5AA;
+      --lime: #EEF8CD;
+      --mint: #BBF1D2;
+      --ink: #191E1B;
+      --ink-muted: #49544E;
+      --ink-soft: #707C75;
+      --white: #FFFFFF;
+      --font-display: 'Jaro', sans-serif;
+      --font-accent: 'Bungee Inline', cursive;
+      --font-brand: 'Nabla', cursive;
+      --font-body: 'Poppins', sans-serif;
+      --radius-sm: 8px;
+      --radius-md: 16px;
+      --radius-lg: 24px;
+      --shadow-sm: 0 2px 8px rgba(25, 30, 27, 0.06);
+      --shadow-md: 0 8px 24px rgba(25, 30, 27, 0.08);
+      --shadow-lg: 0 16px 40px rgba(25, 30, 27, 0.12);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: var(--font-body);
+      background-color: var(--lime);
+      color: var(--ink);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      padding: 0;
+    }
+
+    /* Accessibility: Reduced motion */
+    @media (prefers-reduced-motion: reduce) {
+      *, ::before, ::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+      }
+    }
+
+    /* Header */
+    header {
+      background-color: var(--ink);
+      color: var(--lime);
+      padding: 1.5rem 2rem;
+      border-bottom: 2px solid var(--peach);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      backdrop-filter: blur(8px);
+    }
+
+    .header-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .brand-wrap {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      text-decoration: none;
+    }
+
+    .brand-logo-text {
+      font-family: var(--font-brand);
+      font-size: 2.2rem;
+      line-height: 1;
+    }
+
+    .brand-name {
+      font-family: var(--font-display);
+      font-size: 1.8rem;
+      letter-spacing: 0.05em;
+      color: var(--lime);
+      text-transform: uppercase;
+    }
+
+    .brand-tagline {
+      font-size: 0.75rem;
+      color: var(--peach);
+      border-left: 1px solid rgba(255, 197, 170, 0.3);
+      padding-left: 0.75rem;
+      display: none;
+    }
+
+    @media (min-width: 640px) {
+      .brand-tagline {
+        display: inline-block;
+      }
+    }
+
+    .badge-offline {
+      background-color: var(--mint);
+      color: var(--ink);
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 0.35rem 0.75rem;
+      border-radius: 9999px;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    /* Hero Banner */
+    .hero-banner {
+      background: linear-gradient(135deg, var(--ink) 0%, #252e29 100%);
+      color: var(--lime);
+      padding: 4rem 2rem;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero-banner::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 6px;
+      background: linear-gradient(90deg, var(--coral), var(--peach), var(--mint));
+    }
+
+    .hero-title {
+      font-family: var(--font-display);
+      font-size: clamp(2.5rem, 6vw, 4.5rem);
+      line-height: 1.05;
+      margin-bottom: 1rem;
+      letter-spacing: -0.02em;
+    }
+
+    .hero-subtitle {
+      font-size: 1.15rem;
+      max-width: 720px;
+      margin: 0 auto 2rem;
+      color: rgba(238, 248, 205, 0.85);
+      font-weight: 400;
+    }
+
+    /* Main Container */
+    .main-wrap {
+      max-width: 1200px;
+      margin: 2rem auto;
+      padding: 0 1.5rem 4rem;
+    }
+
+    /* Tabs Navigation */
+    .tabs-nav {
+      display: flex;
+      gap: 0.5rem;
+      overflow-x: auto;
+      padding-bottom: 0.5rem;
+      margin-bottom: 2rem;
+      border-bottom: 2px solid rgba(25, 30, 27, 0.1);
+    }
+
+    .tab-btn {
+      background: none;
+      border: none;
+      font-family: var(--font-body);
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--ink-muted);
+      padding: 0.75rem 1.25rem;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.2s ease;
+    }
+
+    .tab-btn:hover {
+      background-color: rgba(255, 197, 170, 0.4);
+      color: var(--ink);
+    }
+
+    .tab-btn.active {
+      background-color: var(--ink);
+      color: var(--lime);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .tab-panel {
+      display: none;
+      animation: fadeIn 0.3s ease;
+    }
+
+    .tab-panel.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Card styling */
+    .card {
+      background-color: var(--white);
+      border-radius: var(--radius-md);
+      padding: 2rem;
+      border: 1px solid rgba(25, 30, 27, 0.1);
+      box-shadow: var(--shadow-md);
+      margin-bottom: 2rem;
+    }
+
+    .card-title {
+      font-family: var(--font-display);
+      font-size: 2rem;
+      color: var(--ink);
+      margin-bottom: 1rem;
+      line-height: 1.1;
+    }
+
+    .card-kicker {
+      font-family: var(--font-accent);
+      font-size: 0.8rem;
+      color: var(--ink-muted);
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      margin-bottom: 0.5rem;
+      display: block;
+    }
+
+    /* Flow Step Interactive Diagram */
+    .flow-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1rem;
+      margin: 1.5rem 0;
+    }
+
+    .flow-step-btn {
+      background-color: var(--white);
+      border: 2px solid rgba(25, 30, 27, 0.15);
+      border-radius: var(--radius-md);
+      padding: 1.25rem;
+      text-align: left;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      position: relative;
+    }
+
+    .flow-step-btn:hover {
+      border-color: var(--coral);
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .flow-step-btn.selected {
+      border-color: var(--ink);
+      background-color: #FAFCF6;
+      box-shadow: 0 0 0 3px var(--coral);
+    }
+
+    .flow-step-num {
+      font-family: var(--font-accent);
+      font-size: 0.85rem;
+      color: var(--coral);
+      margin-bottom: 0.25rem;
+      display: block;
+    }
+
+    .flow-step-name {
+      font-weight: 700;
+      font-size: 1rem;
+      color: var(--ink);
+      margin-bottom: 0.25rem;
+    }
+
+    .flow-step-sub {
+      font-size: 0.8rem;
+      color: var(--ink-soft);
+    }
+
+    .flow-detail-box {
+      background-color: var(--ink);
+      color: var(--lime);
+      border-radius: var(--radius-md);
+      padding: 2rem;
+      margin-top: 1.5rem;
+      box-shadow: var(--shadow-lg);
+    }
+
+    .flow-detail-box h4 {
+      font-family: var(--font-display);
+      font-size: 1.6rem;
+      color: var(--peach);
+      margin-bottom: 0.5rem;
+    }
+
+    .flow-detail-box p {
+      font-size: 0.95rem;
+      color: rgba(238, 248, 205, 0.9);
+      line-height: 1.7;
+    }
+
+    /* Interactive Simulator */
+    .simulator-box {
+      background-color: #FAFCF6;
+      border: 2px dashed rgba(25, 30, 27, 0.2);
+      border-radius: var(--radius-md);
+      padding: 2rem;
+      margin: 1.5rem 0;
+    }
+
+    .sim-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid rgba(25, 30, 27, 0.1);
+    }
+
+    .sim-badge {
+      font-size: 0.75rem;
+      background-color: var(--coral);
+      color: var(--ink);
+      font-weight: 700;
+      padding: 0.25rem 0.6rem;
+      border-radius: 4px;
+    }
+
+    .sim-items-list {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .sim-item-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--white);
+      padding: 1rem 1.25rem;
+      border-radius: var(--radius-sm);
+      border: 1px solid rgba(25, 30, 27, 0.1);
+    }
+
+    .sim-item-row.resolved {
+      background-color: rgba(187, 241, 210, 0.25);
+      border-color: #059669;
+    }
+
+    .sim-item-name {
+      font-weight: 600;
+      font-size: 0.95rem;
+    }
+
+    .sim-item-status {
+      font-size: 0.8rem;
+      font-weight: 700;
+      padding: 0.2rem 0.6rem;
+      border-radius: 4px;
+    }
+
+    .status-unclear {
+      background-color: rgba(255, 157, 157, 0.4);
+      color: #9E2A2B;
+    }
+
+    .status-clear {
+      background-color: var(--mint);
+      color: #065F46;
+    }
+
+    .sim-cards {
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .sim-card {
+      background-color: var(--white);
+      border: 2px solid var(--peach);
+      border-radius: var(--radius-sm);
+      padding: 1.25rem;
+    }
+
+    .sim-card.done {
+      border-color: #059669;
+      opacity: 0.8;
+    }
+
+    .sim-card-q {
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin-bottom: 0.75rem;
+    }
+
+    .sim-options-row {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    .sim-opt-btn {
+      background-color: #F9FAF8;
+      border: 1px solid rgba(25, 30, 27, 0.2);
+      font-family: var(--font-body);
+      font-weight: 600;
+      font-size: 0.9rem;
+      padding: 0.5rem 1rem;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .sim-opt-btn:hover {
+      background-color: var(--coral);
+      border-color: var(--ink);
+    }
+
+    .sim-opt-btn.active {
+      background-color: var(--ink);
+      color: var(--lime);
+      border-color: var(--ink);
+    }
+
+    .sim-action-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+      margin-top: 1.5rem;
+      flex-wrap: wrap;
+    }
+
+    .btn-confirm {
+      background-color: #059669;
+      color: var(--white);
+      font-family: var(--font-body);
+      font-size: 1rem;
+      font-weight: 700;
+      border: none;
+      padding: 0.85rem 1.75rem;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      box-shadow: var(--shadow-sm);
+      transition: all 0.2s ease;
+    }
+
+    .btn-confirm:disabled {
+      background-color: #A3A8A5;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+
+    .btn-reset {
+      background: none;
+      border: 1px solid var(--ink);
+      font-family: var(--font-body);
+      font-weight: 600;
+      font-size: 0.9rem;
+      padding: 0.8rem 1.25rem;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+    }
+
+    .btn-reset:hover {
+      background-color: rgba(25, 30, 27, 0.05);
+    }
+
+    /* Comparison Grid */
+    .compare-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1.5rem;
+      margin-top: 1.5rem;
+    }
+
+    .compare-card {
+      border-radius: var(--radius-md);
+      padding: 1.5rem;
+    }
+
+    .compare-card.bad {
+      background-color: rgba(255, 157, 157, 0.2);
+      border: 2px solid var(--coral);
+    }
+
+    .compare-card.good {
+      background-color: rgba(187, 241, 210, 0.3);
+      border: 2px solid var(--mint);
+    }
+
+    .compare-header {
+      font-weight: 700;
+      font-size: 1.1rem;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .compare-list {
+      list-style-type: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      font-size: 0.9rem;
+    }
+
+    .compare-list li::before {
+      content: '• ';
+      font-weight: bold;
+    }
+
+    /* Security items */
+    .sec-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 1.25rem;
+      margin-top: 1.5rem;
+    }
+
+    .sec-item {
+      background-color: var(--white);
+      border-radius: var(--radius-sm);
+      padding: 1.25rem;
+      border-left: 4px solid var(--coral);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .sec-item h4 {
+      font-size: 1rem;
+      font-weight: 700;
+      margin-bottom: 0.4rem;
+    }
+
+    .sec-item p {
+      font-size: 0.85rem;
+      color: var(--ink-muted);
+    }
+
+    /* Footer */
+    footer {
+      background-color: var(--ink);
+      color: var(--lime);
+      padding: 2.5rem 2rem;
+      text-align: center;
+      font-size: 0.85rem;
+      border-top: 1px solid rgba(255, 197, 170, 0.2);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Navigation Header -->
+  <header>
+    <div class="header-container">
+      <div class="brand-wrap">
+        <span class="brand-logo-text">BOL</span>
+        <span class="brand-name">PROOF</span>
+        <span class="brand-tagline">किराना वॉइस सत्यापन · Project Explorer</span>
+      </div>
+      <div class="badge-offline">
+        <span>●</span> Offline Interactive Explainer
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <section class="hero-banner">
+    <h1 class="hero-title">“A voice order should never be a guess.”</h1>
+    <p class="hero-subtitle">
+      Explore how BOLPROOF prevents grocery errors in neighborhood Indian kirana stores using deterministic boundary parsing, targeted voice clarification, and explicit human confirmation.
+    </p>
+  </section>
+
+  <!-- Main Content -->
+  <main class="main-wrap">
+
+    <!-- Interactive Navigation Tabs -->
+    <nav class="tabs-nav" role="tablist" aria-label="Explorer Sections">
+      <button class="tab-btn active" role="tab" aria-selected="true" data-tab="tab-flow">1. Interactive Voice Flow</button>
+      <button class="tab-btn" role="tab" aria-selected="false" data-tab="tab-simulator">2. Order Simulator</button>
+      <button class="tab-btn" role="tab" aria-selected="false" data-tab="tab-problem">3. The Kirana Problem</button>
+      <button class="tab-btn" role="tab" aria-selected="false" data-tab="tab-architecture">4. System & Security</button>
+      <button class="tab-btn" role="tab" aria-selected="false" data-tab="tab-roadmap">5. Roadmap</button>
+    </nav>
+
+    <!-- TAB 1: INTERACTIVE VOICE FLOW -->
+    <section id="tab-flow" class="tab-panel active" role="tabpanel">
+      <div class="card">
+        <span class="card-kicker">Interactive Architecture Walkthrough</span>
+        <h2 class="card-title">How Spoken Kirana Orders Move Through BOLPROOF</h2>
+        <p style="color: var(--ink-muted); margin-bottom: 1.5rem;">
+          Click any step below to see its exact engineering implementation and design rationale.
+        </p>
+
+        <div class="flow-grid" id="flow-steps-container">
+          <!-- Step 1 -->
+          <button class="flow-step-btn selected" data-step="1">
+            <span class="flow-step-num">STEP 01</span>
+            <div class="flow-step-name">🎙️ Spoken Input</div>
+            <div class="flow-step-sub">MediaRecorder Audio Capture</div>
+          </button>
+          <!-- Step 2 -->
+          <button class="flow-step-btn" data-step="2">
+            <span class="flow-step-num">STEP 02</span>
+            <div class="flow-step-name">⚡ 16kHz PCM WAV</div>
+            <div class="flow-step-sub">Web Audio In-Browser Resampler</div>
+          </button>
+          <!-- Step 3 -->
+          <button class="flow-step-btn" data-step="3">
+            <span class="flow-step-num">STEP 03</span>
+            <div class="flow-step-name">🛡️ Express Backend Proxy</div>
+            <div class="flow-step-sub">Rate Limiter & Gnani Prisma STT</div>
+          </button>
+          <!-- Step 4 -->
+          <button class="flow-step-btn" data-step="4">
+            <span class="flow-step-num">STEP 04</span>
+            <div class="flow-step-name">✍️ Transcript Review</div>
+            <div class="flow-step-sub">Editable Devanagari Hindi Text</div>
+          </button>
+          <!-- Step 5 -->
+          <button class="flow-step-btn" data-step="5">
+            <span class="flow-step-num">STEP 05</span>
+            <div class="flow-step-name">🔍 Semantic Parsing</div>
+            <div class="flow-step-sub">Zero Cross-Item Quantity Leakage</div>
+          </button>
+          <!-- Step 6 -->
+          <button class="flow-step-btn" data-step="6">
+            <span class="flow-step-num">STEP 06</span>
+            <div class="flow-step-name">❓ Targeted Clarification</div>
+            <div class="flow-step-sub">Independent Per-Item Cards</div>
+          </button>
+          <!-- Step 7 -->
+          <button class="flow-step-btn" data-step="7">
+            <span class="flow-step-num">STEP 07</span>
+            <div class="flow-step-name">🔊 Gnani Timbre TTS</div>
+            <div class="flow-step-sub">Spoken Hindi Clarification Audio</div>
+          </button>
+          <!-- Step 8 -->
+          <button class="flow-step-btn" data-step="8">
+            <span class="flow-step-num">STEP 08</span>
+            <div class="flow-step-name">✅ Explicit Confirmation</div>
+            <div class="flow-step-sub">Verified Kirana Order Ledger</div>
+          </button>
+        </div>
+
+        <!-- Detail Box for selected step -->
+        <div class="flow-detail-box" id="flow-detail-content">
+          <h4 id="detail-title">Step 1: Spoken Audio Capture (MediaRecorder)</h4>
+          <p id="detail-desc">
+            The customer or shopkeeper taps "Record Voice" on the counter terminal. Using the browser's MediaRecorder API, compressed audio (WebM/Opus) is captured in real-time from the microphone with hardware echo-cancellation and noise-suppression enabled.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 2: INTERACTIVE SIMULATOR -->
+    <section id="tab-simulator" class="tab-panel" role="tabpanel">
+      <div class="card">
+        <span class="card-kicker">Deterministic Parsing Simulation</span>
+        <h2 class="card-title">Interactive Multi-Item Clarification Demo</h2>
+        <p style="color: var(--ink-muted); margin-bottom: 1rem;">
+          Experience how BOLPROOF handles the challenging colloquial Hindi test order:
+        </p>
+
+        <div class="simulator-box">
+          <div class="sim-header">
+            <div>
+              <span style="font-size: 0.8rem; font-weight: 700; color: var(--coral);">SAMPLE SPOKEN TRANSCRIPT:</span>
+              <h3 style="font-size: 1.3rem; font-weight: 700;">“आधा चीनी एक नमक 3 सरसों तेल ऑर्डर करना है”</h3>
+            </div>
+            <span class="sim-badge">FRONTEND SIMULATION</span>
+          </div>
+
+          <!-- Draft Order Table -->
+          <h4 style="font-size: 0.95rem; font-weight: 700; margin-bottom: 0.75rem; text-transform: uppercase;">
+            Draft Order State (कच्ची पर्ची)
+          </h4>
+          <div class="sim-items-list">
+            <!-- Sugar -->
+            <div class="sim-item-row" id="row-sugar">
+              <span class="sim-item-name" id="label-sugar">चीनी (Sugar) — मात्रा स्पष्ट नहीं है</span>
+              <span class="sim-item-status status-unclear" id="status-sugar">Unclear ⚠️</span>
+            </div>
+            <!-- Salt -->
+            <div class="sim-item-row" id="row-salt">
+              <span class="sim-item-name" id="label-salt">नमक (Salt) — मात्रा स्पष्ट नहीं है</span>
+              <span class="sim-item-status status-unclear" id="status-salt">Unclear ⚠️</span>
+            </div>
+            <!-- Mustard Oil -->
+            <div class="sim-item-row" id="row-oil">
+              <span class="sim-item-name" id="label-oil">सरसों तेल (Mustard Oil) — मात्रा स्पष्ट नहीं है</span>
+              <span class="sim-item-status status-unclear" id="status-oil">Unclear ⚠️</span>
+            </div>
+          </div>
+
+          <!-- Clarification Cards -->
+          <h4 style="font-size: 0.95rem; font-weight: 700; margin-bottom: 0.75rem; text-transform: uppercase;">
+            Targeted Clarification Prompts (स्पष्टीकरण सवाल)
+          </h4>
+          <div class="sim-cards">
+            <!-- Sugar Card -->
+            <div class="sim-card" id="card-sugar">
+              <div class="sim-card-q">“चीनी कितनी चाहिए?”</div>
+              <div class="sim-options-row">
+                <button class="sim-opt-btn" onclick="simResolve('sugar', '500 g')">500 g</button>
+                <button class="sim-opt-btn" onclick="simResolve('sugar', '1 kg')">1 kg</button>
+                <button class="sim-opt-btn" onclick="simResolve('sugar', '2 kg')">2 kg</button>
+              </div>
+            </div>
+
+            <!-- Salt Card -->
+            <div class="sim-card" id="card-salt">
+              <div class="sim-card-q">“नमक कितना चाहिए?”</div>
+              <div class="sim-options-row">
+                <button class="sim-opt-btn" onclick="simResolve('salt', '500 g')">500 g</button>
+                <button class="sim-opt-btn" onclick="simResolve('salt', '1 kg')">1 kg</button>
+                <button class="sim-opt-btn" onclick="simResolve('salt', '2 kg')">2 kg</button>
+              </div>
+            </div>
+
+            <!-- Oil Card -->
+            <div class="sim-card" id="card-oil">
+              <div class="sim-card-q">“सरसों तेल कितना चाहिए?” (Liquid Volume)</div>
+              <div class="sim-options-row">
+                <button class="sim-opt-btn" onclick="simResolve('oil', '500 ml')">500 ml</button>
+                <button class="sim-opt-btn" onclick="simResolve('oil', '1 L')">1 L</button>
+                <button class="sim-opt-btn" onclick="simResolve('oil', '2 L')">2 L</button>
+                <button class="sim-opt-btn" onclick="simResolve('oil', '5 L')">5 L</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Bottom Action Bar -->
+          <div class="sim-action-bar">
+            <button class="btn-confirm" id="sim-confirm-btn" disabled onclick="simConfirmOrder()">
+              Finalize Confirmed Order (ऑर्डर पक्का करें)
+            </button>
+            <button class="btn-reset" onclick="simReset()">
+              ↺ Reset Simulator
+            </button>
+          </div>
+          <p id="sim-message" style="margin-top: 1rem; font-size: 0.9rem; font-weight: 600; color: #9E2A2B;">
+            ⚠️ Order cannot be finalized until all 3 ambiguous items are resolved.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 3: THE PROBLEM -->
+    <section id="tab-problem" class="tab-panel" role="tabpanel">
+      <div class="card">
+        <span class="card-kicker">Kirana Retail Reality</span>
+        <h2 class="card-title">Why Generic Voice AI Fails in Indian Grocery Shops</h2>
+        <p style="color: var(--ink-muted); margin-bottom: 1.5rem;">
+          In India's 12+ million kirana shops, speed is essential, but wrong items cause massive friction.
+        </p>
+
+        <div class="compare-grid">
+          <!-- Generic Voice AI -->
+          <div class="compare-card bad">
+            <div class="compare-header" style="color: #9E2A2B;">
+              ❌ Typical Voice Assistants & Auto-Billers
+            </div>
+            <ul class="compare-list">
+              <li><strong>Silent Guesswork:</strong> Silently assumes 2 kg when customer said "half sugar".</li>
+              <li><strong>Cross-Item Pollution:</strong> Leaks quantities between products (e.g. 2 kg sugar makes salt 2 kg).</li>
+              <li><strong>Liquid Confusion:</strong> Prompts for "2 kg mustard oil" instead of standard liter bottles.</li>
+              <li><strong>Zero Review Step:</strong> Directly creates an invoice without letting the shopkeeper review what was heard.</li>
+              <li><strong>Result:</strong> Wrong deliveries, awkward returns, and loss of neighborhood customer trust.</li>
+            </ul>
+          </div>
+
+          <!-- BOLPROOF -->
+          <div class="compare-card good">
+            <div class="compare-header" style="color: #065F46;">
+              ✅ BOLPROOF Deterministic Verification
+            </div>
+            <ul class="compare-list">
+              <li><strong>Zero Silent Assumptions:</strong> Flags bare numbers as ambiguous; never defaults to 2 kg.</li>
+              <li><strong>Clause Boundary Isolation:</strong> Splits multi-item phrases so items never contaminate each other.</li>
+              <li><strong>Physical State Taxonomy:</strong> Strict distinction between solids (`g`/`kg`) and liquids (`ml`/`L`).</li>
+              <li><strong>Transparent Review:</strong> Shopkeeper inspects and edits recognized Hindi text first.</li>
+              <li><strong>Explicit Confirmation:</strong> Requires explicit final confirmation only when every item is clear.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 4: ARCHITECTURE & SECURITY -->
+    <section id="tab-architecture" class="tab-panel" role="tabpanel">
+      <div class="card">
+        <span class="card-kicker">Security & Defensive Engineering</span>
+        <h2 class="card-title">Hardened Architecture & Privacy Guarantees</h2>
+        <p style="color: var(--ink-muted);">
+          BOLPROOF uses an in-memory, privacy-preserving pipeline with robust defense-in-depth protections.
+        </p>
+
+        <div class="sec-grid">
+          <div class="sec-item">
+            <h4>🔒 Zero Secrets in Frontend</h4>
+            <p>`GNANI_API_KEY` is loaded solely on the Node.js backend. Client bundles contain zero private credentials.</p>
+          </div>
+          <div class="sec-item">
+            <h4>⏱️ Sliding-Window Rate Limiting</h4>
+            <p>Voice endpoints (`/api/voice/*`) enforce 30 requests/min per IP to prevent API credit exhaustion.</p>
+          </div>
+          <div class="sec-item">
+            <h4>🛡️ Audio Magic-Byte Validation</h4>
+            <p>Inspects buffer headers for genuine audio signatures (WAV, OGG, MP3, FLAC, WebM). Arbitrary binaries are rejected.</p>
+          </div>
+          <div class="sec-item">
+            <h4>📦 Strict Upload Restrictions</h4>
+            <p>Single-file `upload.single('audio_file')` with a hard 10MB limit prevents memory exhaustion attacks.</p>
+          </div>
+          <div class="sec-item">
+            <h4>🗑️ Ephemeral Audio Processing</h4>
+            <p>Audio is held strictly in memory while streaming to Gnani AI. Nothing is saved to disk or databases.</p>
+          </div>
+          <div class="sec-item">
+            <h4>🛡️ Defensive HTTP Headers</h4>
+            <p>Enforces `X-Content-Type-Options: nosniff`, `X-Frame-Options: SAMEORIGIN`, and strict origin policies.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 5: ROADMAP -->
+    <section id="tab-roadmap" class="tab-panel" role="tabpanel">
+      <div class="card">
+        <span class="card-kicker">Future Evolution</span>
+        <h2 class="card-title">BOLPROOF Strategic Roadmap</h2>
+        <div style="margin-top: 1.5rem; display: flex; flex-direction: column; gap: 1rem;">
+          <div style="background: #FAFCF6; padding: 1.25rem; border-radius: var(--radius-sm); border-left: 4px solid var(--mint);">
+            <strong style="color: var(--ink);">Phase 1: Multi-Lingual Regional Expansion</strong>
+            <p style="font-size: 0.9rem; color: var(--ink-muted);">Expand deterministic boundary parsing to Marathi, Tamil, Telugu, Bengali, Kannada, and Gujarati colloquial ordering patterns.</p>
+          </div>
+          <div style="background: #FAFCF6; padding: 1.25rem; border-radius: var(--radius-sm); border-left: 4px solid var(--peach);">
+            <strong style="color: var(--ink);">Phase 2: Offline Edge STT Fallback</strong>
+            <p style="font-size: 0.9rem; color: var(--ink-muted);">Integrate an in-browser WebAssembly/WebGPU lightweight Indic speech recognition model for intermittent internet connectivity.</p>
+          </div>
+          <div style="background: #FAFCF6; padding: 1.25rem; border-radius: var(--radius-sm); border-left: 4px solid var(--coral);">
+            <strong style="color: var(--ink);">Phase 3: Thermal Receipt Printer & POS Bridge</strong>
+            <p style="font-size: 0.9rem; color: var(--ink-muted);">Connect directly to Bluetooth and USB ESC/POS 58mm/80mm thermal receipt printers for physical counter slips upon order confirmation.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Footer -->
+  <footer>
+    <div style="max-width: 1200px; margin: 0 auto;">
+      <p style="font-weight: 600; margin-bottom: 0.5rem;">BOLPROOF · Voice-Order Verification for Indian Kirana Stores</p>
+      <p style="opacity: 0.8; font-size: 0.8rem;">
+        Self-contained offline explainer · Zero tracking, zero remote dependencies, zero user data retention.
+      </p>
+    </div>
+  </footer>
+
+  <script>
+    // Tab Switching Logic
+    const tabBtns = document.querySelectorAll('.tab-btn');
+    const tabPanels = document.querySelectorAll('.tab-panel');
+
+    tabBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        tabBtns.forEach(b => {
+          b.classList.remove('active');
+          b.setAttribute('aria-selected', 'false');
+        });
+        tabPanels.forEach(p => p.classList.remove('active'));
+
+        btn.classList.add('active');
+        btn.setAttribute('aria-selected', 'true');
+        const targetId = btn.getAttribute('data-tab');
+        const targetPanel = document.getElementById(targetId);
+        if (targetPanel) {
+          targetPanel.classList.add('active');
+        }
+      });
+    });
+
+    // Flow Step Click Details
+    const stepDetails = {
+      1: {
+        title: "Step 01: Spoken Audio Capture (MediaRecorder)",
+        desc: "The shopkeeper taps 'Record Voice' on the counter terminal. Using the browser's MediaRecorder API, compressed audio (WebM/Opus) is captured in real-time from the microphone with hardware echo-cancellation and noise-suppression enabled."
+      },
+      2: {
+        title: "Step 02: 16kHz PCM WAV Conversion (Web Audio API)",
+        desc: "Gnani Prisma STT requires linear PCM audio. Rather than uploading heavy uncompressed audio or relying on backend transcoders, BOLPROOF uses the browser's OfflineAudioContext to resample captured audio to 16,000 Hz mono and synthesize a true 16-bit linear PCM RIFF/WAV blob directly in browser memory."
+      },
+      3: {
+        title: "Step 03: Backend Express Proxy (Gnani Prisma STT v3)",
+        desc: "The WAV blob is posted to '/api/voice/transcribe'. The Express server validates audio magic bytes, checks rate limits (30 req/min), attaches the secret X-API-Key-ID header, and forwards the stream to Gnani Prisma STT v3, returning the recognized Devanagari Hindi text."
+      },
+      4: {
+        title: "Step 04: Editable Transcript Review (Human-in-the-Loop)",
+        desc: "Speech recognition is never treated as infallible. The recognized Hindi sentence is rendered in a prominent, editable textarea. The shopkeeper can immediately inspect what was heard and correct any acoustic speech recognition errors before committing to parsing."
+      },
+      5: {
+        title: "Step 05: Semantic Boundary Parsing (orderParser.ts)",
+        desc: "Clicking 'Confirm Order' executes parseOrderText(). Clauses are split at conjunctions (और, ,) and quantity prefix words, completely eliminating cross-item quantity bleeding. Fractions like 'आधा किलो' resolve to 500 g, while bare numbers without units are flagged as ambiguous."
+      },
+      6: {
+        title: "Step 06: Targeted Clarification Cards",
+        desc: "Every ambiguous item receives an independent clarification card. Solid staples (sugar, salt) prompt for mass (500 g, 1 kg, 2 kg), while liquids (mustard oil) strictly prompt for volume (500 ml, 1 L, 2 L, 5 L). Resolving one product never marks others as resolved."
+      },
+      7: {
+        title: "Step 07: Gnani Timbre TTS Spoken Prompts",
+        desc: "For hands-free counter communication, the shopkeeper can tap the audio icon on any clarification card. The backend queries Gnani Timbre TTS v2.5 ('Nalini' voice model) and streams natural Hindi speech audio back to the counter speaker."
+      },
+      8: {
+        title: "Step 08: Explicit Final Order Confirmation",
+        desc: "The order cannot be finalized until all items have unambiguous quantities. Once all items are verified, an itemized summary ledger is displayed for final visual verification, and the shopkeeper explicitly clicks 'Finalize Confirmed Order'."
+      }
+    };
+
+    const stepBtns = document.querySelectorAll('.flow-step-btn');
+    const detailTitle = document.getElementById('detail-title');
+    const detailDesc = document.getElementById('detail-desc');
+
+    stepBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        stepBtns.forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
+        const stepNum = btn.getAttribute('data-step');
+        if (stepDetails[stepNum]) {
+          detailTitle.textContent = stepDetails[stepNum].title;
+          detailDesc.textContent = stepDetails[stepNum].desc;
+        }
+      });
+    });
+
+    // Order Simulator State
+    const simState = {
+      sugar: null,
+      salt: null,
+      oil: null
+    };
+
+    function simResolve(item, value) {
+      simState[item] = value;
+
+      // Update row
+      const row = document.getElementById('row-' + item);
+      const label = document.getElementById('label-' + item);
+      const status = document.getElementById('status-' + item);
+      const card = document.getElementById('card-' + item);
+
+      if (row && label && status && card) {
+        row.classList.add('resolved');
+        const itemNames = { sugar: 'चीनी (Sugar)', salt: 'नमक (Salt)', oil: 'सरसों तेल (Mustard Oil)' };
+        label.textContent = itemNames[item] + ' — ' + value;
+        status.className = 'sim-item-status status-clear';
+        status.textContent = 'Resolved ✓';
+        card.classList.add('done');
+
+        // Mark active button
+        const btns = card.querySelectorAll('.sim-opt-btn');
+        btns.forEach(b => {
+          if (b.textContent === value) {
+            b.classList.add('active');
+          } else {
+            b.classList.remove('active');
+          }
+        });
+      }
+
+      checkSimCompletion();
+    }
+
+    function checkSimCompletion() {
+      const allDone = Boolean(simState.sugar && simState.salt && simState.oil);
+      const confirmBtn = document.getElementById('sim-confirm-btn');
+      const msg = document.getElementById('sim-message');
+
+      if (allDone) {
+        confirmBtn.disabled = false;
+        msg.style.color = '#065F46';
+        msg.textContent = '✓ All 3 items verified! Order is ready for final confirmation.';
+      } else {
+        confirmBtn.disabled = true;
+        const missing = [];
+        if (!simState.sugar) missing.push('Sugar');
+        if (!simState.salt) missing.push('Salt');
+        if (!simState.oil) missing.push('Mustard Oil');
+        msg.style.color = '#9E2A2B';
+        msg.textContent = '⚠️ Please resolve: ' + missing.join(', ');
+      }
+    }
+
+    function simConfirmOrder() {
+      const msg = document.getElementById('sim-message');
+      msg.style.color = '#065F46';
+      msg.innerHTML = '🎉 <strong>Order Confirmed!</strong> Bill finalized with: Sugar (' + simState.sugar + '), Salt (' + simState.salt + '), Mustard Oil (' + simState.oil + ').';
+      document.getElementById('sim-confirm-btn').disabled = true;
+    }
+
+    function simReset() {
+      simState.sugar = null;
+      simState.salt = null;
+      simState.oil = null;
+
+      ['sugar', 'salt', 'oil'].forEach(item => {
+        const row = document.getElementById('row-' + item);
+        const label = document.getElementById('label-' + item);
+        const status = document.getElementById('status-' + item);
+        const card = document.getElementById('card-' + item);
+
+        row.classList.remove('resolved');
+        const itemNames = { sugar: 'चीनी (Sugar)', salt: 'नमक (Salt)', oil: 'सरसों तेल (Mustard Oil)' };
+        label.textContent = itemNames[item] + ' — मात्रा स्पष्ट नहीं है';
+        status.className = 'sim-item-status status-unclear';
+        status.textContent = 'Unclear ⚠️';
+        card.classList.remove('done');
+
+        const btns = card.querySelectorAll('.sim-opt-btn');
+        btns.forEach(b => b.classList.remove('active'));
+      });
+
+      const confirmBtn = document.getElementById('sim-confirm-btn');
+      confirmBtn.disabled = true;
+      const msg = document.getElementById('sim-message');
+      msg.style.color = '#9E2A2B';
+      msg.textContent = '⚠️ Order cannot be finalized until all 3 ambiguous items are resolved.';
+    }
+  </script>
+</body>
+</html>
