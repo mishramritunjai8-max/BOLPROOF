@@ -8,7 +8,8 @@
 [![Vite](https://img.shields.io/badge/Vite-8.3-646CFF.svg)](#technology-stack)
 [![Node Express](https://img.shields.io/badge/Node.js-Express_4-green.svg)](#technology-stack)
 [![Three.js](https://img.shields.io/badge/Three.js-WebGL_3D-black.svg)](#technology-stack)
-[![Tests Passing](https://img.shields.io/badge/Tests-47%20Passed-brightgreen.svg)](#running-tests)
+[![Tests Passing](https://img.shields.io/badge/Tests-56%20Passed-brightgreen.svg)](#running-tests)
+[![Vercel Ready](https://img.shields.io/badge/Vercel-Serverless%20Functions-black.svg)](#deploying-to-vercel)
 
 ---
 
@@ -199,10 +200,15 @@ BOLPROOF utilizes **Gnani AI** (`api.vachana.ai`) for Indic voice recognition an
 
 ```
 BOLPROOF/
+├── api/                                # Vercel Serverless Functions (Node.js Edge / Serverless)
+│   ├── voice/
+│   │   ├── transcribe.ts               # POST /api/voice/transcribe (Gnani Prisma STT proxy)
+│   │   └── speak.ts                    # POST /api/voice/speak (Gnani Timbre TTS proxy)
+│   └── health.ts                       # GET /api/health
 ├── docs/                               # Comprehensive project documentation
 │   ├── AUDIT_REPORT.md                 # Complete architecture and vulnerability audit
 │   ├── SECURITY_AUDIT.md               # Security hardening & defensive posture report
-│   ├── TEST_REPORT.md                  # Test execution log (47 passing assertions)
+│   ├── TEST_REPORT.md                  # Test execution log (56 passing assertions)
 │   ├── DESIGN.md                       # Designer & technical UI/UX specifications
 │   └── PROJECT_EXPLORER.html           # Interactive standalone browser explainer
 ├── src/
@@ -213,6 +219,7 @@ BOLPROOF/
 │   │   ├── scene/                      # Three.js 3D Kirana counter, models, and textures
 │   │   └── sections/                   # OrderDemoSection, ProblemSection, HowItWorksSection
 │   ├── utils/
+│   │   ├── apiClient.ts                # Safe API client, VITE_API_URL resolver, and response parser
 │   │   ├── audioRecorder.ts            # Web Audio recording & 16kHz PCM WAV encoder
 │   │   ├── orderParser.ts              # Deterministic Hindi quantity parser & boundary logic
 │   │   └── sound.ts                    # Zero-dependency procedural Web Audio UI sound effects
@@ -221,13 +228,15 @@ BOLPROOF/
 │   └── main.tsx                        # React DOM root mounting
 ├── test/
 │   ├── api.test.ts                     # API security, magic byte, and rate limiter tests
+│   ├── apiClient.test.ts               # Safe JSON response parser tests
 │   └── orderParser.test.ts             # Hindi fraction and quantity parsing test suite
 ├── .env.example                        # Safe environment variable template
 ├── .gitignore                          # Strict source control exclusion rules
 ├── index.html                          # HTML shell with Google Fonts
 ├── package.json                        # Manifest, scripts, and dependencies
-├── server.ts                           # Hardened Express voice proxy server
+├── server.ts                           # Hardened Express voice proxy server (local dev)
 ├── tsconfig.json                       # TypeScript compiler configuration
+├── vercel.json                         # Vercel configuration & SPA rewrites
 └── vite.config.ts                      # Vite build configuration with proxy rules
 ```
 
@@ -282,7 +291,44 @@ BOLPROOF/
 
 ---
 
-## 11. Running Tests & Quality Checks
+## 11. Deploying to Vercel
+
+BOLPROOF is ready for one-click deployment on **[Vercel](https://vercel.com/)** as a full-stack application (Vite Frontend + Vercel Serverless Functions):
+
+### Step 1: Push your project to GitHub
+```bash
+git add .
+git commit -m "feat: Add Vercel serverless functions and vercel.json"
+git push origin main
+```
+
+### Step 2: Import into Vercel
+1. Log in to your [Vercel Dashboard](https://vercel.com/dashboard).
+2. Click **Add New...** > **Project**.
+3. Import your **BOLPROOF** Git repository.
+4. Framework Preset will be automatically detected as **Vite**.
+5. Build and Output Settings:
+   - **Build Command:** `vite build`
+   - **Output Directory:** `dist`
+
+### Step 3: Configure Environment Variables
+Under the **Environment Variables** section before deploying:
+- **Key:** `GNANI_API_KEY`
+- **Value:** `<your-actual-gnani-api-key>`
+- Environments: Select all (**Production**, **Preview**, **Development**)
+
+### Step 4: Click Deploy
+Click **Deploy**. Vercel will:
+1. Build the React frontend into `dist/`.
+2. Automatically deploy the serverless functions in `api/`:
+   - `POST /api/voice/transcribe` (Prisma STT proxy)
+   - `POST /api/voice/speak` (Timbre TTS proxy)
+   - `GET /api/health`
+3. Serve your full-stack BOLPROOF application under your `.vercel.app` URL with zero extra configuration.
+
+---
+
+## 12. Running Tests & Quality Checks
 
 BOLPROOF comes with automated tests covering parsing, Hindi fractions, unit classifications, API security, and audio magic-byte headers:
 
