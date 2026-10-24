@@ -2,7 +2,7 @@
 
 **Date:** October 2026  
 **Test Suite:** BOLPROOF Verification & Quality Assurance Suite  
-**Status:** ALL TESTS PASSING (47 Automated Assertions Passed)  
+**Status:** ALL TESTS PASSING (56 Automated Assertions Passed)  
 
 ---
 
@@ -11,8 +11,9 @@
 This report records the test execution results for the **BOLPROOF** voice-order verification project. The test suite covers:
 1. **Deterministic Hindi Order Parsing (`test/orderParser.test.ts`):** 23 automated unit assertions testing the multi-product acceptance transcript, Hindi fractions (`आधा`, `पाव`, `डेढ़`, `ढाई`, `सवा`), explicit vs. missing metric units, liquid vs. solid unit mappings, cross-item quantity boundary isolation, and missing quantity handling.
 2. **Backend API Security and Validation (`test/api.test.ts`):** 24 automated unit and contract assertions testing audio magic bytes header validation (RIFF/WAV, OGG, FLAC, MP3 ID3/MPEG, WebM/EBML), in-memory sliding-window rate limiting, HTTP 429 status and `Retry-After` header enforcement, multi-IP rate bucket isolation, and Text-to-Speech input validation and control-character sanitization.
-3. **TypeScript Type Safety:** Full compilation check with `tsc --noEmit`.
-4. **Production Build Compilation:** Full bundling and asset compilation with `vite build`.
+3. **API Client & Safe Response Parsing (`test/apiClient.test.ts`):** 9 automated unit assertions testing safe JSON parsing, prevention of `Failed to execute 'json' on 'Response': Unexpected end of JSON input`, empty 200 responses, Cloudflare 404/405/502 handling, and error extraction.
+4. **TypeScript Type Safety:** Full compilation check with `tsc --noEmit`.
+5. **Production Build Compilation:** Full bundling and asset compilation with `vite build`.
 
 ---
 
@@ -22,9 +23,10 @@ This report records the test execution results for the **BOLPROOF** voice-order 
 |---|---|---|---|---|
 | 1 | `npm test` | Hindi Order Parsing & Multi-Clarification | **PASS** (23 / 23) | Passed in 0.8s |
 | 2 | `npm run test:api` | Audio Magic Bytes & Rate Limiting | **PASS** (24 / 24) | Passed in 0.9s |
-| 3 | `npm run test:all` | Full Test Suite (Parser + API) | **PASS** (47 / 47) | Passed in 1.4s |
-| 4 | `npm run lint` | TypeScript Type Check (`tsc --noEmit`) | **PASS** (0 errors) | Clean exit |
-| 5 | `npm run build` | Production Vite Bundle (`vite build`) | **PASS** (0 errors) | Built in 1.52s |
+| 3 | `npm run test:client` | Safe JSON Parsing & Cloudflare Error Guards | **PASS** (9 / 9) | Passed in 0.4s |
+| 4 | `npm run test:all` | Full Test Suite (Parser + API + Client) | **PASS** (56 / 56) | Passed in 1.8s |
+| 5 | `npm run lint` | TypeScript Type Check (`tsc --noEmit`) | **PASS** (0 errors) | Clean exit |
+| 6 | `npm run build` | Production Vite Bundle (`vite build`) | **PASS** (0 errors) | Built in 1.75s |
 
 ---
 
@@ -133,6 +135,7 @@ This report records the test execution results for the **BOLPROOF** voice-order 
 3. **Single Clarification Selection Overwrite:** Completely resolved in `src/components/sections/OrderDemoSection.tsx` by introducing per-item resolution tracking (`voiceResolvedQuantities: Record<string, string>`).
 4. **Vite Native ESM Warning:** Resolved in `vite.config.ts` by replacing `__dirname` with `fileURLToPath(import.meta.url)`.
 5. **Express Missing Rate Limiting & File Upload Risks:** Resolved in `server.ts` with sliding-window limiter, magic-byte checking, and single-file restriction.
+6. **Cloudflare `Unexpected end of JSON input` Crash:** Resolved by removing unconditional `response.json()` calls in `src/components/sections/OrderDemoSection.tsx`, introducing `src/utils/apiClient.ts` with safe JSON extraction and actionable HTTP status guards, adding native Cloudflare Pages Functions in `functions/api/voice/` for zero-configuration edge execution, and supporting `VITE_API_URL` for external backend hosting.
 
 ---
 

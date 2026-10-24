@@ -1,0 +1,5 @@
+# Cloudflare Pages Routing Rules
+# Note: When deploying with /functions, Cloudflare Pages automatically routes /api/* to the Edge functions.
+# If you instead deploy your Express server on an external host (e.g. Render / Railway / Fly.io),
+# you can proxy API calls here without CORS by setting:
+# /api/*  https://your-external-backend.com/api/:splat  200

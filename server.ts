@@ -319,7 +319,16 @@ app.post(
         });
       }
 
-      const result = (await response.json()) as Record<string, unknown>;
+      const responseText = await response.text().catch(() => '');
+      let result: Record<string, unknown> = {};
+      try {
+        result = responseText ? (JSON.parse(responseText) as Record<string, unknown>) : {};
+      } catch {
+        return res.status(502).json({
+          error: 'Gnani Prisma STT returned an invalid response format from upstream.',
+          code: 'INVALID_UPSTREAM_RESPONSE',
+        });
+      }
 
       // Extract transcript from supported response schemas
       let transcript = '';

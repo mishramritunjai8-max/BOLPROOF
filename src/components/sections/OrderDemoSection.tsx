@@ -14,6 +14,7 @@ import {
 import { sounds } from '../../utils/sound';
 import { AudioRecordingService } from '../../utils/audioRecorder';
 import { parseOrderText, ParseResult } from '../../utils/orderParser';
+import { transcribeAudio, synthesizeSpeech } from '../../utils/apiClient';
 
 interface OrderDemoSectionProps {
   selectedQuantity?: string | null;
@@ -110,23 +111,7 @@ export const OrderDemoSection: React.FC<OrderDemoSectionProps> = ({
     }
 
     try {
-      const response = await fetch('/api/voice/speak', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          text: textToSpeak,
-          voice: 'Nalini',
-          model: 'timbre-v2.5',
-          language: 'hi-IN',
-        }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || `TTS synthesis failed (status ${response.status}).`);
-      }
-
-      const audioBlob = await response.blob();
+      const audioBlob = await synthesizeSpeech(textToSpeak, 'Nalini', 'timbre-v2.5', 'hi-IN');
       const audioUrl = URL.createObjectURL(audioBlob);
 
       const audio = new Audio(audioUrl);
@@ -228,21 +213,8 @@ export const OrderDemoSection: React.FC<OrderDemoSectionProps> = ({
       // Convert to 16kHz linear PCM WAV
       const result = await recorderServiceRef.current.stop();
 
-      // Submit to backend Gnani Prisma STT proxy
-      const formData = new FormData();
-      formData.append('audio_file', result.wavBlob, 'voice_order.wav');
-      formData.append('language_code', 'hi-IN');
-
-      const response = await fetch('/api/voice/transcribe', {
-        method: 'POST',
-        body: formData,
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || `Transcription error (status ${response.status})`);
-      }
+      // Submit to backend Gnani Prisma STT proxy with safe response parsing
+      const data = await transcribeAudio(result.wavBlob, 'hi-IN');
 
       if (data.transcript && data.transcript.trim().length > 0) {
         sounds.playConfirm();
